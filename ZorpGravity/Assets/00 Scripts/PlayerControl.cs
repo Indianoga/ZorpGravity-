@@ -5,6 +5,10 @@ using UnityEngine;
 public class PlayerControl : MonoBehaviour
 {
     [SerializeField]
+    Transform global;
+    [SerializeField]
+    Transform[] posBlocks;
+    [SerializeField]
     Transform groundCheck;
     [SerializeField]
     float groundRadius;
@@ -20,12 +24,16 @@ public class PlayerControl : MonoBehaviour
 
     [SerializeField]
     LayerMask whatIsGround;
+    [SerializeField]
+    LayerMask whatIsBlock;
     Rigidbody2D rb;
+    RaycastHit2D hit;
+
 
     bool isGrounded;
     bool facingRight;
     bool gravityChange;
-
+    bool isGrabing;
     // Start is called before the first frame update
     void Start()
     {
@@ -48,6 +56,7 @@ public class PlayerControl : MonoBehaviour
             yield return null;
             Walk();
             GravitySystem();
+            GrabBox();
         }
     }
 
@@ -56,14 +65,17 @@ public class PlayerControl : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
         InputMove = Input.GetAxis("Horizontal");
         rb.velocity = new Vector2(InputMove * speed, rb.velocity.y);
-        if(InputMove > 0 && facingRight == true)
-        {
-            Flip();
-        }
-        else if (InputMove < 0 && facingRight == false)
-        {
-            Flip();
-        }
+       
+            if (InputMove > 0 && facingRight == true)
+            {
+                Flip();
+            }
+            else if (InputMove < 0 && facingRight == false)
+            {
+                Flip();
+            }
+        
+        
         if (isGrounded)
         {
             extraJumps = extraJumpsValue;
@@ -101,6 +113,32 @@ public class PlayerControl : MonoBehaviour
             {
                 rb.gravityScale = -1;
             }
+        }
+    }
+
+    void GrabBox()
+    {
+
+        hit = Physics2D.Raycast(transform.position, Vector2.right, 1.5f, whatIsBlock);
+       
+        
+       
+       
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 pos = new Vector3(transform.position.x + 2, transform.position.y, transform.position.z);
+            if (hit.collider != null)
+            {
+                Debug.Log("Catch");
+                hit.collider.transform.parent =  posBlocks[0].transform;   
+
+            }
+
+        }
+        else if(Input.GetMouseButtonUp(0))
+        {
+            hit.collider.transform.parent = global.transform;
         }
     }
 }
