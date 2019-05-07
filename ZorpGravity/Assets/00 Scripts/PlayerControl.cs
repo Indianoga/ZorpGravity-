@@ -7,7 +7,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField]
     Transform global;
     [SerializeField]
-    Transform[] posBlocks;
+    Transform posBlocks;
     [SerializeField]
     Transform groundCheck;
     [SerializeField]
@@ -28,18 +28,21 @@ public class PlayerControl : MonoBehaviour
     LayerMask whatIsBlock;
     Rigidbody2D rb;
     RaycastHit2D hit;
-
+    
 
     bool isGrounded;
-    bool facingRight;
+    bool isHited;
+    bool facingLeft;
     bool gravityChange;
-    bool isGrabing;
+    [HideInInspector]
+    public bool isGrabing;
     // Start is called before the first frame update
     void Start()
     {
         gravityChange = true;
         extraJumps = extraJumpsValue;
         rb = GetComponent<Rigidbody2D>();
+        facingLeft = false;
         StartCoroutine("Action");
     }
 
@@ -57,6 +60,7 @@ public class PlayerControl : MonoBehaviour
             Walk();
             GravitySystem();
             GrabBox();
+            Debug.Log(isGrabing);
         }
     }
 
@@ -66,14 +70,20 @@ public class PlayerControl : MonoBehaviour
         InputMove = Input.GetAxis("Horizontal");
         rb.velocity = new Vector2(InputMove * speed, rb.velocity.y);
        
-            if (InputMove > 0 && facingRight == true)
+            if (InputMove > 0 && facingLeft)
             {
-                Flip();
+                 if (!isGrabing)
+                 {
+                    Flip();
+                 }
             }
-            else if (InputMove < 0 && facingRight == false)
+            else if (InputMove < 0 && !facingLeft)
             {
-                Flip();
-            }
+                 if (!isGrabing)
+                 {
+                    Flip();
+                 }
+             }
         
         
         if (isGrounded)
@@ -81,12 +91,12 @@ public class PlayerControl : MonoBehaviour
             extraJumps = extraJumpsValue;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && extraJumps > 0)
+        if (Input.GetKeyDown(KeyCode.W) && extraJumps > 0)
         {
             rb.velocity = Vector2.up * jumpForce;
             extraJumps--;
         }
-        else if (Input.GetKeyDown(KeyCode.Space) && extraJumps == 0 && isGrounded == true)
+        else if (Input.GetKeyDown(KeyCode.W) && extraJumps == 0 && isGrounded == true)
         {
             rb.velocity = Vector2.up * jumpForce;
         }
@@ -94,7 +104,7 @@ public class PlayerControl : MonoBehaviour
 
     void Flip()
     {
-        facingRight = !facingRight;
+        facingLeft = !facingLeft;
         Vector3 scaler = transform.localScale;
         scaler.x *= -1;
         transform.localScale = scaler;
@@ -118,27 +128,46 @@ public class PlayerControl : MonoBehaviour
 
     void GrabBox()
     {
-
-        hit = Physics2D.Raycast(transform.position, Vector2.right, 1.5f, whatIsBlock);
-       
-        
-       
-       
-
-        if (Input.GetMouseButtonDown(0))
+        if (!facingLeft)
         {
-            Vector3 pos = new Vector3(transform.position.x + 2, transform.position.y, transform.position.z);
-            if (hit.collider != null)
+           
+            isHited = Physics2D.Raycast(transform.position, Vector2.right, 1.5f, whatIsBlock);
+            hit = Physics2D.Raycast(transform.position, Vector2.right, 1.5f, whatIsBlock);
+        }
+        else if (facingLeft)
+        {
+            isHited = Physics2D.Raycast(transform.position, -Vector2.right, 1.5f, whatIsBlock);
+            hit = Physics2D.Raycast(transform.position, -Vector2.right, 1.5f, whatIsBlock);
+        }
+       
+        if (isHited)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                Debug.Log("Catch");
-                hit.collider.transform.parent =  posBlocks[0].transform;   
+                isGrabing = !isGrabing;
+
+                if (hit.collider != null)
+                {
+                    var col = hit.collider.GetComponent<Rigidbody2D>();
+                    if (isGrabing)
+                    {
+                        Debug.Log("Catch");
+                        hit.collider.transform.parent = posBlocks.transform;
+                        col.isKinematic = true;
+                    }
+                    else if (!isGrabing)
+                    {
+                        hit.collider.transform.parent = global.transform;
+                        col.isKinematic = false;
+                    }
+
+                }
 
             }
-
         }
-        else if(Input.GetMouseButtonUp(0))
-        {
-            hit.collider.transform.parent = global.transform;
-        }
+        
     }
+    
+    
+
 }

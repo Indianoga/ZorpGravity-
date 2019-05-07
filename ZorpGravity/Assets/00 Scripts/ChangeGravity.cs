@@ -4,12 +4,20 @@ using UnityEngine;
 
 public class ChangeGravity : MonoBehaviour
 {
-    bool isGravity;
+    [SerializeField]
+    LayerMask WhatIsPlayer;
     Rigidbody2D rb;
+    GameObject player;
+    PlayerControl playerControl;
+    bool isGravity;
+    bool hasPlayer;
+
     // Start is called before the first frame update
     void Start()
     {
         isGravity = true;
+        player = GameObject.FindGameObjectWithTag("Player");
+        playerControl = player.GetComponent<PlayerControl>();
         rb = GetComponent<Rigidbody2D>();
         StartCoroutine("Action"); 
 
@@ -26,6 +34,9 @@ public class ChangeGravity : MonoBehaviour
         {
             yield return null;
             GravityChangeSystem();
+            PlayerProximity();
+            
+            
         }
     }
     void GravityChangeSystem()
@@ -35,6 +46,7 @@ public class ChangeGravity : MonoBehaviour
             isGravity = !isGravity;
             if(isGravity)
             {
+                Debug.Log(rb.gravityScale);
                 rb.gravityScale = 1;
             }
             else if (!isGravity)
@@ -43,4 +55,21 @@ public class ChangeGravity : MonoBehaviour
             }
         }
     }
+    void PlayerProximity()
+    {
+        hasPlayer = Physics2D.OverlapCircle(transform.position, 0.5f, WhatIsPlayer);
+        if(playerControl.isGrabing == false)
+        {
+            if (hasPlayer)
+            {
+                rb.isKinematic = true;
+            }
+            else
+            {
+                rb.isKinematic = false;
+            }
+        }
+        
+    }
+
 }
