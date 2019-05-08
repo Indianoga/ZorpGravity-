@@ -60,7 +60,7 @@ public class PlayerControl : MonoBehaviour
             Walk();
             GravitySystem();
             GrabBox();
-            Debug.Log(isGrabing);
+
         }
     }
 
@@ -91,14 +91,29 @@ public class PlayerControl : MonoBehaviour
             extraJumps = extraJumpsValue;
         }
 
-        if (Input.GetKeyDown(KeyCode.W) && extraJumps > 0)
+        if (gravityChange)
         {
-            rb.velocity = Vector2.up * jumpForce;
-            extraJumps--;
+            if (Input.GetKeyDown(KeyCode.W) && extraJumps > 0)
+            {
+                rb.velocity = Vector2.up * jumpForce;
+                extraJumps--;
+            }
+            else if (Input.GetKeyDown(KeyCode.W) && extraJumps == 0 && isGrounded == true)
+            {
+                rb.velocity = Vector2.up * jumpForce;
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.W) && extraJumps == 0 && isGrounded == true)
+        else if (!gravityChange)
         {
-            rb.velocity = Vector2.up * jumpForce;
+            if (Input.GetKeyDown(KeyCode.S) && extraJumps > 0)
+            {
+                rb.velocity = -Vector2.up * jumpForce;
+                extraJumps--;
+            }
+            else if (Input.GetKeyDown(KeyCode.S) && extraJumps == 0 && isGrounded == true)
+            {
+                rb.velocity = -Vector2.up * jumpForce;
+            }
         }
     }
 
@@ -107,6 +122,7 @@ public class PlayerControl : MonoBehaviour
         facingLeft = !facingLeft;
         Vector3 scaler = transform.localScale;
         scaler.x *= -1;
+        
         transform.localScale = scaler;
     }
     
@@ -114,16 +130,23 @@ public class PlayerControl : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            Vector3 scaler = transform.localScale;
+            scaler.y *= -1;
+            transform.localScale = scaler;
             gravityChange = !gravityChange;
-            if(gravityChange)
+            if (gravityChange)
             {
+                
                 rb.gravityScale = 1;
             }
             else if (!gravityChange)
             {
+                
                 rb.gravityScale = -1;
             }
         }
+        
+        
     }
 
     void GrabBox()
@@ -151,7 +174,7 @@ public class PlayerControl : MonoBehaviour
                     var col = hit.collider.GetComponent<Rigidbody2D>();
                     if (isGrabing)
                     {
-                        Debug.Log("Catch");
+                        
                         hit.collider.transform.parent = posBlocks.transform;
                         col.isKinematic = true;
                     }

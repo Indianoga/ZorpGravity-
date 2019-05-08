@@ -9,6 +9,11 @@ public class ChangeGravity : MonoBehaviour
     Rigidbody2D rb;
     GameObject player;
     PlayerControl playerControl;
+
+
+    
+    public string colorBlock;
+
     bool isGravity;
     bool hasPlayer;
 
@@ -41,12 +46,13 @@ public class ChangeGravity : MonoBehaviour
     }
     void GravityChangeSystem()
     {
+        
         if (Input.GetKeyDown(KeyCode.Q))
         {
             isGravity = !isGravity;
-            if(isGravity)
+            if (isGravity)
             {
-                Debug.Log(rb.gravityScale);
+
                 rb.gravityScale = 1;
             }
             else if (!isGravity)
@@ -54,6 +60,8 @@ public class ChangeGravity : MonoBehaviour
                 rb.gravityScale = -1;
             }
         }
+        
+        
     }
     void PlayerProximity()
     {
